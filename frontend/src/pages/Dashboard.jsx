@@ -8,6 +8,7 @@ export default function Dashboard(){
   const { user } = useAuth(); 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
 
   const refresh = useCallback(async () => {
   setErr('');
