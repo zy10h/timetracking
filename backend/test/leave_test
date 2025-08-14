@@ -1,0 +1,16 @@
+const { expect } = require('chai');
+const sinon = require('sinon');
+const LeaveRequest = require('../models/leaveRequest');
+const ctrl = require('../controllers/leaveController');
+
+describe('Leave controller', () => {
+  afterEach(() => sinon.restore());
+
+  it('addLeave should create with PENDING', async () => {
+    const created = { status: 'PENDING' };
+    sinon.stub(LeaveRequest, 'create').resolves(created);
+    const req = { user:{ id:'u1' }, body:{ type:'ANNUAL', startDate:Date.now(), endDate:Date.now(), reason:'' } };
+    const res = { status: c => { expect(c).to.equal(201); return { json: o => expect(o).to.equal(created) }; }, json:()=>{} };
+    await ctrl.addLeave(req, res);
+  });
+});
