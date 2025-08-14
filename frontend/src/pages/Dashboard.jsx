@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { checkIn, checkOut, getHistory } from '../services/attendance';
+import { checkIn, checkOut, getHistory } from '../api/attendance';
 import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard(){
