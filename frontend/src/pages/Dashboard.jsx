@@ -1,61 +1,64 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { checkIn, checkOut, getHistory } from '../api/attendance';
 import { useAuth } from '../context/AuthContext';
-import { useCallback } from "react";
 
+export default function Dashboard() {
+  const { user } = useAuth();
+  const token = user?.token;
 
-export default function Dashboard(){
-  const { user } = useAuth(); 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
 
   const refresh = useCallback(async () => {
-  setErr('');
-  try {
-    const { data } = await getHistory(user.token);
-    setRows(data);
-  } catch (e) {
-    setErr(e?.response?.data?.message || 'Failed to load');
-  }
-}, [user.token]);
+    setErr('');
+    try {
+      const { data } = await getHistory(token);
+      setRows(data);
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Failed to load');
+    }
+  }, [token]); 
 
-  const onCheckIn = async ()=>{
-    setLoading(true); setErr('');
-    try{
-      await checkIn(user.token);
+  const onCheckIn = async () => {
+    setLoading(true);
+    try {
+      await checkIn(token);
       await refresh();
-      alert('Checked In');
-    }catch(e){
-      alert(e?.response?.data?.message || 'Failed to check in');
-    }finally{ setLoading(false); }
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Check-in failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onCheckOut = async ()=>{
-    setLoading(true); setErr('');
-    try{
-      const { data } = await checkOut(user.token);
+  const onCheckOut = async () => {
+    setLoading(true);
+    try {
+      await checkOut(token);
       await refresh();
-      alert(`Checked out successfully, worked ${data?.workedMinutes ?? ''} min.`);
-    }catch(e){
-      alert(e?.response?.data?.message || 'Failed to check out');
-    }finally{ setLoading(false); }
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Check out failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(()=>{ refresh(); }, []);
+  useEffect(() => {
+    refresh();
+  }, [refresh]); 
 
   return (
-    <div className="p-4">
+    <div className="p-4 space-y-3">
       <h2>Attendance Dashboard</h2>
-      <div className="space-x-8 my-3">
-        <button disabled={loading} onClick={onCheckIn}>Check In</button>
-        <button disabled={loading} onClick={onCheckOut}>Check Out</button>
+      <div className="space-x-2">
+        <button disabled={loading} onClick={onCheckIn}>Check in</button>
+        <button disabled={loading} onClick={onCheckOut}>Check out</button>
       </div>
-      {err && <div style={{color:'crimson'}}>{err}</div>}
-
+      {err && <div style={{ color: 'crimson' }}>{err}</div>}
       <h3>Recent Records</h3>
       <ul>
-        {rows.slice(0,5).map(r=>(
+        {rows.slice(0, 5).map(r => (
           <li key={r._id}>
             {new Date(r.checkInAt).toLocaleString()} — {r.checkOutAt ? new Date(r.checkOutAt).toLocaleString() : 'Have not checked out'}
             {r.workedMinutes ? `（${r.workedMinutes} min）` : ''}
