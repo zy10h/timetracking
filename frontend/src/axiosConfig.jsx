@@ -1,9 +1,17 @@
 import axios from 'axios';
 
-const axiosInstance = axios.create({
-  baseURL: 'http://54.252.214.233:5001', // local
-  //baseURL: 'http://54.252.214.233:5001', // live
+const baseURL =
+  import.meta?.env?.VITE_API_BASE_URL || 
+  process.env.REACT_APP_API_BASE_URL ||  
+  '/api'; 
+
+const api = axios.create({
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
 
-export default axiosInstance;
+export const withAuth = (token) => ({
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+export default api;
