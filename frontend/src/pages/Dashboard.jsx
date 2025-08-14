@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { checkIn, checkOut, getHistory } from '../api/attendance';
 import { useAuth } from '../context/AuthContext';
+import { useCallback } from "react";
+
 
 export default function Dashboard(){
   const { user } = useAuth(); 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState('');
 
-  const refresh = async ()=>{
-    setErr('');
-    try{
-      const { data } = await getHistory(user.token);
-      setRows(data);
-    }catch(e){ setErr(e?.response?.data?.message || 'Failed to load'); }
-  };
+  const refresh = useCallback(async () => {
+  setErr('');
+  try {
+    const { data } = await getHistory(user.token);
+    setRows(data);
+  } catch (e) {
+    setErr(e?.response?.data?.message || 'Failed to load');
+  }
+}, [user.token]);
 
   const onCheckIn = async ()=>{
     setLoading(true); setErr('');
