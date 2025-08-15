@@ -18,12 +18,15 @@ const Navbar = () => {
           <>
             <Link to="/Dashboard" className="mr-4">Dashboard</Link>
             <Link to="/attendance" className="mr-4">History</Link>
+            <Link to="/leave/apply"   className="px-3 py-2 text-white/90 hover:text-white">Apply Leaves</Link>
+            <Link to="/leave/history" className="px-3 py-2 text-white/90 hover:text-white">My Leaves</Link>
             <button
               onClick={handleLogout}
               className="bg-red-500 px-4 py-2 rounded hover:bg-red-700"
             >
               Logout
             </button>
+
           </>
         ) : (
           <>
