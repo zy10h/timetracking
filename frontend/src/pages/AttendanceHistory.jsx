@@ -4,24 +4,24 @@ import { useAuth } from '../context/AuthContext';
 
 export default function AttendanceHistory() {
   const { user } = useAuth();
-  const token = user?.token;
+  const token = user?.token; 
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    let mounted = true;
+    if (!token) return; 
+    let cancelled = false;
     (async () => {
       setErr('');
       try {
-        if (!user?.token) return;
-        const { data } = await getHistory(user.token);
-        if (mounted) setRows(data);
+        const { data } = await getHistory(token);
+        if (!cancelled) setRows(data);
       } catch (e) {
-        if (mounted) setErr(e?.response?.data?.message || 'Failed to load');
+        if (!cancelled) setErr(e?.response?.data?.message || 'Failed to load');
       }
     })();
-    return () => { mounted = false; };
-  }, [user?.token]); 
+    return () => { cancelled = true; };
+  }, [token]);  
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-6">
