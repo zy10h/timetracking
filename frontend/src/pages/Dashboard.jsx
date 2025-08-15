@@ -31,7 +31,7 @@ export default function Dashboard() {
   const onOut = async () => {
     setLoading(true);
     try { const { data } = await checkOut(token); setOk(`Checked out successfully，worked ${data?.workedMinutes ?? ''} min`); await refresh(); }
-    catch (e) { setErr(e?.response?.data?.message || 'Check-out failed'); }
+    catch (e) { setErr(e?.response?.data?.message || 'Check out failed'); }
     finally { setLoading(false); }
   };
 
