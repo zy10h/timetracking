@@ -9,12 +9,19 @@ export default function AttendanceHistory() {
   const [err, setErr] = useState('');
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
       setErr('');
-      try { const { data } = await getHistory(user.token); setRows(data); }
-      catch (e) { setErr(e?.response?.data?.message || 'Failed to load'); }
+      try {
+        if (!user?.token) return;
+        const { data } = await getHistory(user.token);
+        if (mounted) setRows(data);
+      } catch (e) {
+        if (mounted) setErr(e?.response?.data?.message || 'Failed to load');
+      }
     })();
-  }, [token]);
+    return () => { mounted = false; };
+  }, [user?.token]); 
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-6">
