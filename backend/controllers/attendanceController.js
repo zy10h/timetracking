@@ -1,72 +1,69 @@
-const Attendance = require('../models/Attendance');
+// backend/controllers/attendanceController.js
+const Attendance = require('../models/Attendance'); // 如路径不同，按实际修改
 
-
-const getAttendance = async (req, res) => {
-  try {
-    let row;
-    if (req.params.id) {
-       row = await Attendance.findById(req.params.id);
-     } else {
-       row = await Attendance.findOne({ userId: req.user.id, checkOutAt: null });
-     }
-    if (!row) return res.status(404).json({ message: 'Attendance not found' });
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-
+// 签到：若已有未签退记录 → 409
 const addAttendance = async (req, res) => {
-  const { checkInAt, notes } = req.body; 
   try {
-    const open = await Attendance.findOne({ userId: req.user.id, checkOutAt: null });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const open = await Attendance.findOne({ userId, checkOutAt: null });
     if (open) return res.status(409).json({ message: 'Already checked in' });
-    const row = await Attendance.create({
-      userId: req.user.id,
-      checkInAt: checkInAt ? new Date(checkInAt) : new Date(),
-      notes,
+
+    const doc = await Attendance.create({
+      userId,
+      checkInAt: new Date(),
+      notes: req.body?.notes || ''
     });
-    res.status(201).json(row);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    return res.status(201).json(doc);
+  } catch (err) {
+    console.error('checkin error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
-
+// 签退：按“当前用户最新一条未签退记录”签退
 const updateAttendance = async (req, res) => {
-  const { checkInAt, checkOutAt, notes } = req.body;
   try {
-    const row = await Attendance.findById(req.params.id);
-    if (!row) return res.status(404).json({ message: 'Attendance not found' });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
+    const open = await Attendance
+      .findOne({ userId, checkOutAt: null })
+      .sort({ checkInAt: -1 });
 
-    row.checkInAt = checkInAt ? new Date(checkInAt) : row.checkInAt;
-    row.checkOutAt = checkOutAt ? new Date(checkOutAt) : row.checkOutAt;
-    row.notes = notes ?? row.notes;
-
-
-    if (row.checkInAt && row.checkOutAt) {
-      row.workedMinutes = Math.ceil((row.checkOutAt - row.checkInAt) / 60000);
+    if (!open) {
+      // 没有可签退记录，用 409 更贴近业务冲突
+      return res.status(409).json({ message: 'No open check-in to checkout' });
     }
 
-    const saved = await row.save();
-    res.json(saved);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    open.checkOutAt = new Date();
+    open.workedMinutes = Math.max(
+      0,
+      Math.round((open.checkOutAt - open.checkInAt) / 60000)
+    );
+    await open.save();
+
+    return res.json({ _id: open._id, workedMinutes: open.workedMinutes });
+  } catch (err) {
+    console.error('checkout error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
-
-const deleteAttendance = async (req, res) => {
+// 历史列表：按时间倒序
+const getAttendance = async (req, res) => {
   try {
-    const row = await Attendance.findById(req.params.id);
-    if (!row) return res.status(404).json({ message: 'Attendance not found' });
-    await row.remove();
-    res.json({ message: 'Attendance deleted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const list = await Attendance.find({ userId }).sort({ checkInAt: -1 });
+    return res.json(list);
+  } catch (err) {
+    console.error('history error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
-module.exports = { getAttendance, addAttendance, updateAttendance, deleteAttendance };
+module.exports = { addAttendance, updateAttendance, getAttendance };
