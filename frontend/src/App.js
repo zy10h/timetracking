@@ -4,6 +4,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AttendanceHistory from './pages/AttendanceHistory';
+import LeaveApply from './pages/LeaveApply';
+import LeaveHistory from './pages/LeaveHistory';
+
 
 function App() {
   return (
@@ -15,6 +18,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/attendance" element={<AttendanceHistory />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/leave/apply" element={<LeaveApply/>} />
+        <Route path="/leave/history" element={<LeaveHistory/>} />
       </Routes>
     </Router>
   );
