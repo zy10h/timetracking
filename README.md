@@ -23,3 +23,7 @@
 * **GitHub Account** [[https://github.com/signup?source=login](https://github.com/signup?source=login)]** **
 
 ---
+
+Test account: 
+Email: 123@1.com
+Password: 123
