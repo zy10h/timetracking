@@ -14,3 +14,5 @@ describe('Attendance controller', () => {
     await ctrl.getAttendance(req, res);
   });
 });
+
+
