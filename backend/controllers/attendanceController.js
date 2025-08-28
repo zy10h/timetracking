@@ -1,7 +1,7 @@
 // backend/controllers/attendanceController.js
-const Attendance = require('../models/Attendance'); // 如路径不同，按实际修改
+const Attendance = require('../models/Attendance'); 
 
-// 签到：若已有未签退记录 → 409
+
 const addAttendance = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
@@ -23,7 +23,7 @@ const addAttendance = async (req, res) => {
   }
 };
 
-// 签退：按“当前用户最新一条未签退记录”签退
+
 const updateAttendance = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
@@ -34,7 +34,7 @@ const updateAttendance = async (req, res) => {
       .sort({ checkInAt: -1 });
 
     if (!open) {
-      // 没有可签退记录，用 409 更贴近业务冲突
+
       return res.status(409).json({ message: 'No open check-in to checkout' });
     }
 
@@ -52,7 +52,7 @@ const updateAttendance = async (req, res) => {
   }
 };
 
-// 历史列表：按时间倒序
+
 const getAttendance = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
